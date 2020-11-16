@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-ryanchat-dev-202038-authRole",
+      "UnauthRoleArn": "arn:aws:iam::626472016794:role/amplify-ryanchat-dev-202038-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::626472016794:role/amplify-ryanchat-dev-202038-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-ryanchat-dev-202038-deployment",
+      "UnauthRoleName": "amplify-ryanchat-dev-202038-unauthRole",
+      "StackName": "amplify-ryanchat-dev-202038",
+      "StackId": "arn:aws:cloudformation:us-east-2:626472016794:stack/amplify-ryanchat-dev-202038/71c90b90-254e-11eb-89b1-068a5b117f6e",
+      "AmplifyAppId": "d1lfwhh88il9jk"
+    },
+    "categories": {
+      "auth": {
+        "ryanchat25d8e2c6": {}
+      }
+    }
+  }
+}
