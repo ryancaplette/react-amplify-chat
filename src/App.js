@@ -43,8 +43,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         {chattingWith && <p onClick={() => unsubscribe()}><i className="arrow"></i></p>}
-        <h4>Welcome to Ryan.chat - So anyone can contact me. 😊</h4>
-        {chattingWith ? `Chatting with ${chattingWith}` : ''}
+        {chattingWith ? <h4>{chattingWith}</h4> : <h4>Contacts</h4>}
         <button onClick={handleLogout} >Logout</button>
       </header>
       <section>
