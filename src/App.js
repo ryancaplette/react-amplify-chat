@@ -19,9 +19,11 @@ function scrollHelper() {
   scrollRef.current.scrollIntoView({ behavior: 'smooth' })
 }
 
+
 function setScrollHelper(ref) {
   scrollRef = ref
 }
+
 
 function App() {
   const [participants, setParticipants] = useState([])
@@ -52,6 +54,7 @@ function App() {
     </div>
   )
 }
+
 
 async function setupActiveUser(activeUser, participants, setParticipants) {
   if (participants.length > 0) {
@@ -89,7 +92,6 @@ function ChatParticipants(props) {
       </main>
     </>
   )
-
 }
 
 
@@ -112,7 +114,6 @@ function ChatParticipant(props) {
 }
 
 
-
 async function handleLogout() {
   // remove user from available chat participants
   if (chatFeed) {
@@ -124,6 +125,7 @@ async function handleLogout() {
   Auth.signOut()
   window.location.reload()
 }
+
 
 async function setupChatFeed(setMessages, chattingWith) {
   chatFeed = await API.graphql(
@@ -166,6 +168,7 @@ async function setupChatFeed(setMessages, chattingWith) {
   scrollHelper()
 }
 
+
 function ChatRoom(props) {
 
   const scrollHelper = useRef()
@@ -197,8 +200,8 @@ function ChatRoom(props) {
       </form>
     </>
   )
-
 }
+
 
 function ChatMessage(props) {
   const { from, message } = props.message
@@ -210,5 +213,6 @@ function ChatMessage(props) {
     </div>
   </>)
 }
+
 
 export default withAuthenticator(App)
