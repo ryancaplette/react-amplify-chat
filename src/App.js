@@ -5,13 +5,14 @@ import Amplify, { Auth, API, graphqlOperation } from 'aws-amplify';
 import awsconfig from './aws-exports';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 
-import { listChats } from './graphql/queries';
-import { createChat } from './graphql/mutations';
+import { listChats, getUser, listUsers } from './graphql/queries';
+import { createChat, createUser, updateUser } from './graphql/mutations';
 import * as subscriptions from './graphql/subscriptions';
 
 Amplify.configure(awsconfig);
 
-let subscription;
+let chatFeed;
+let theUser;
 let scrollRef;
 
 function scrollHelper() {
@@ -23,13 +24,12 @@ function setScrollHelper(ref) {
 }
 
 function App() {
-  const [user, setUser] = useState();
+  const [participants, setParticipants] = useState([])
+  const [chattingWith, setChattingWith] = useState('')
 
   Auth.currentUserInfo().then((data) => {
-    console.log('trying');
     if (data) {
-      setUser(data.username);
-      console.log('user was set');
+      setupActiveUser(data.username, participants, setParticipants)
     }
   });
 
@@ -37,63 +37,123 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h4>Welcome to Ryan.chat - So anyone can contact me. 😊</h4>
+        {chattingWith ? `Chatting with ${chattingWith}` : ''}
         {/* <AmplifySignOut /> */}
         <button onClick={handleLogout} >Logout</button>
       </header>
       <section>
-        <ChatRoom />
+        { chattingWith ? <ChatRoom chattingWith={chattingWith} /> : <ChatParticipants setChattingWith={setChattingWith} participants={participants}/> }
       </section>
     </div>
   );
 }
 
+async function setupActiveUser(activeUser, participants, setParticipants) {
+  if (participants.length > 0) {
+    return
+  }
+
+  const user = await API.graphql(graphqlOperation(getUser, { id: activeUser }));
+  theUser = activeUser;
+
+  if (user.data.getUser) {
+    API.graphql(graphqlOperation(updateUser, { input: {id: activeUser, isOnline: true}}));
+  } else {
+    API.graphql(graphqlOperation(createUser, { input: {id: activeUser, isOnline: true}}));
+  }
+
+  const filter = {filter: {
+    isOnline: {eq: true},
+    id: {ne: activeUser}
+  }}
+  const activeUsers = await API.graphql(graphqlOperation(listUsers, filter));
+  setParticipants(activeUsers.data.listUsers.items)
+}
+
+
+function ChatParticipants(props) {
+
+  return (
+    <>
+      <main>
+        <div className="message sent">
+        
+        {props.participants && props.participants.map(participant => <p key={participant.id} onClick={(e) => props.setChattingWith(participant.id)} >{participant.id}</p>)}
+        </div>
+      </main>
+    </>
+  )
+
+}
+
 function handleLogout() {
   // remove user from available chat participants
-  subscription.unsubscribe();
+  if (chatFeed) {
+    chatFeed.unsubscribe();
+  }
+
+  API.graphql(graphqlOperation(updateUser, { input: {id: theUser, isOnline: false}}));
 
   Auth.signOut();
   window.location.reload();
 }
 
-async function setupSub(setMessages) {
-  subscription = await API.graphql(
+async function setupChatFeed(setMessages, chattingWith) {
+  chatFeed = await API.graphql(
     graphqlOperation(subscriptions.onCreateChat)
   ).subscribe({
     next: (chatData) => {
-      setMessages((currentState) => [...currentState, {message: chatData.value.data.onCreateChat.message}]);
-      console.log('after set');
+      if (chatData.value.data.onCreateChat.from !== theUser && chatData.value.data.onCreateChat.to !== theUser) {
+        return
+      }
+
+      const {from, to, message } = chatData.value.data.onCreateChat
+      setMessages((currentState) => [...currentState, {from: from, to: to, message: message}]);
       scrollHelper();
     }
   });
 
-  const allMessages = await API.graphql(graphqlOperation(listChats, {/*limit: 25*/}));
+  const filter = {filter: {
+    or: [
+      {and: [
+        {to: { eq: theUser }},
+        {from: { eq: chattingWith }}
+      ]},
+      {and: [
+        {to: { eq: chattingWith }},
+        {from: { eq: theUser }}
+      ]}
+    ]
+  }}
+  const allMessages = await API.graphql(graphqlOperation(listChats, filter));
+
+  // sort by createdAt
+  allMessages.data.listChats.items.sort((msg1, msg2) => (Date.parse(msg1.createdAt) > Date.parse(msg2.createdAt)) ? 1 : -1)
   setMessages(allMessages.data.listChats.items);
   scrollHelper();
 }
 
-function ChatRoom() {
+function ChatRoom(props) {
 
   const scrollHelper = useRef();
   const [messages, setMessages] = useState([]);
   const [formValue, setFormValue] = useState('');
 
-  if (!subscription) {
-    console.log('setting up');
-    setupSub(setMessages);
+  if (!chatFeed) {
+    setupChatFeed(setMessages, props.chattingWith);
   }
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    setFormValue('');
-
-    const chat = { message: formValue };
+    const chat = { from: theUser, to: props.chattingWith, message: formValue };
     API.graphql(graphqlOperation(createChat, {input: chat}));
+    setFormValue('');
   }
 
   return (
     <>
       <main>
-        {messages && messages.map(msg => <ChatMessage message={msg} />)}
+        {messages && messages.map((msg, index) => <ChatMessage key={index} message={msg} />)}
 
         <div ref={scrollHelper}></div>
       </main>
@@ -108,11 +168,10 @@ function ChatRoom() {
 }
 
 function ChatMessage(props) {
-  const { message } = props.message;
+  const { from, message } = props.message;
 
-  // const messageClass = uid === auth.currentUser.uid ? 'sent' : 'received';
 
-  const messageClass = 'sent';
+  const messageClass = theUser === from ? 'sent' : 'received';
 
   return (<>
     <div className={`message ${messageClass}`}>

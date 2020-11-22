@@ -1,4 +1,11 @@
 type Chat @model {
   id: ID!
+  from: String!
+  to: String!
   message: String!
+}
+
+type User @model {
+  id: ID!
+  isOnline: Boolean!
 }

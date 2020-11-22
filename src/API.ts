@@ -4,10 +4,14 @@
 
 export type CreateChatInput = {
   id?: string | null,
+  from: string,
+  to: string,
   message: string,
 };
 
 export type ModelChatConditionInput = {
+  from?: ModelStringInput | null,
+  to?: ModelStringInput | null,
   message?: ModelStringInput | null,
   and?: Array< ModelChatConditionInput | null > | null,
   or?: Array< ModelChatConditionInput | null > | null,
@@ -56,6 +60,8 @@ export type ModelSizeInput = {
 
 export type UpdateChatInput = {
   id: string,
+  from?: string | null,
+  to?: string | null,
   message?: string | null,
 };
 
@@ -63,8 +69,38 @@ export type DeleteChatInput = {
   id?: string | null,
 };
 
+export type CreateUserInput = {
+  id?: string | null,
+  isOnline: boolean,
+};
+
+export type ModelUserConditionInput = {
+  isOnline?: ModelBooleanInput | null,
+  and?: Array< ModelUserConditionInput | null > | null,
+  or?: Array< ModelUserConditionInput | null > | null,
+  not?: ModelUserConditionInput | null,
+};
+
+export type ModelBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
+export type UpdateUserInput = {
+  id: string,
+  isOnline?: boolean | null,
+};
+
+export type DeleteUserInput = {
+  id?: string | null,
+};
+
 export type ModelChatFilterInput = {
   id?: ModelIDInput | null,
+  from?: ModelStringInput | null,
+  to?: ModelStringInput | null,
   message?: ModelStringInput | null,
   and?: Array< ModelChatFilterInput | null > | null,
   or?: Array< ModelChatFilterInput | null > | null,
@@ -87,6 +123,14 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
+export type ModelUserFilterInput = {
+  id?: ModelIDInput | null,
+  isOnline?: ModelBooleanInput | null,
+  and?: Array< ModelUserFilterInput | null > | null,
+  or?: Array< ModelUserFilterInput | null > | null,
+  not?: ModelUserFilterInput | null,
+};
+
 export type CreateChatMutationVariables = {
   input: CreateChatInput,
   condition?: ModelChatConditionInput | null,
@@ -96,6 +140,8 @@ export type CreateChatMutation = {
   createChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -111,6 +157,8 @@ export type UpdateChatMutation = {
   updateChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -126,7 +174,54 @@ export type DeleteChatMutation = {
   deleteChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateUserMutationVariables = {
+  input: CreateUserInput,
+  condition?: ModelUserConditionInput | null,
+};
+
+export type CreateUserMutation = {
+  createUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateUserMutationVariables = {
+  input: UpdateUserInput,
+  condition?: ModelUserConditionInput | null,
+};
+
+export type UpdateUserMutation = {
+  updateUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteUserMutationVariables = {
+  input: DeleteUserInput,
+  condition?: ModelUserConditionInput | null,
+};
+
+export type DeleteUserMutation = {
+  deleteUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -140,6 +235,8 @@ export type GetChatQuery = {
   getChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -158,7 +255,43 @@ export type ListChatsQuery = {
     items:  Array< {
       __typename: "Chat",
       id: string,
+      from: string,
+      to: string,
       message: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
+export type GetUserQueryVariables = {
+  id: string,
+};
+
+export type GetUserQuery = {
+  getUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListUsersQueryVariables = {
+  filter?: ModelUserFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListUsersQuery = {
+  listUsers:  {
+    __typename: "ModelUserConnection",
+    items:  Array< {
+      __typename: "User",
+      id: string,
+      isOnline: boolean,
       createdAt: string,
       updatedAt: string,
     } | null > | null,
@@ -170,6 +303,8 @@ export type OnCreateChatSubscription = {
   onCreateChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -180,6 +315,8 @@ export type OnUpdateChatSubscription = {
   onUpdateChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -190,7 +327,39 @@ export type OnDeleteChatSubscription = {
   onDeleteChat:  {
     __typename: "Chat",
     id: string,
+    from: string,
+    to: string,
     message: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateUserSubscription = {
+  onCreateUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateUserSubscription = {
+  onUpdateUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteUserSubscription = {
+  onDeleteUser:  {
+    __typename: "User",
+    id: string,
+    isOnline: boolean,
     createdAt: string,
     updatedAt: string,
   } | null,
