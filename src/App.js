@@ -33,9 +33,16 @@ function App() {
     }
   });
 
+  async function unsubscribe() {
+    await chatFeed.unsubscribe()
+    setChattingWith('');
+    chatFeed = false;
+  }
+
   return (
     <div className="App">
       <header className="App-header">
+        {chattingWith && <p onClick={() => unsubscribe()}><i className="arrow"></i></p>}
         <h4>Welcome to Ryan.chat - So anyone can contact me. 😊</h4>
         {chattingWith ? `Chatting with ${chattingWith}` : ''}
         {/* <AmplifySignOut /> */}
@@ -63,11 +70,13 @@ async function setupActiveUser(activeUser, participants, setParticipants) {
   }
 
   const filter = {filter: {
-    isOnline: {eq: true},
+    // isOnline: {eq: true},
     id: {ne: activeUser}
   }}
   const activeUsers = await API.graphql(graphqlOperation(listUsers, filter));
-  setParticipants(activeUsers.data.listUsers.items)
+  if (activeUsers.data.listUsers.items.length > 0) {
+    setParticipants(activeUsers.data.listUsers.items)
+  }
 }
 
 
@@ -76,23 +85,41 @@ function ChatParticipants(props) {
   return (
     <>
       <main>
-        <div className="message sent">
-        
-        {props.participants && props.participants.map(participant => <p key={participant.id} onClick={(e) => props.setChattingWith(participant.id)} >{participant.id}</p>)}
-        </div>
+        {props.participants && props.participants.map(participant => <ChatParticipant key={participant.id} participant={participant} setChattingWith={props.setChattingWith} />)}
       </main>
     </>
   )
 
 }
 
-function handleLogout() {
+
+function ChatParticipant(props) {
+  return (
+    <>
+      <div className="contact" onClick={(e) => props.setChattingWith(props.participant.id)}>
+        <div className="contact-letter">
+          {props.participant.id[0]}
+        </div>
+        <div className="contact-info">
+          <span className="contact-username">{props.participant.id}</span><br />
+          <span className="contact-online"><small>{props.participant.isOnline ? 'online' : 'offline'}</small></span>
+        </div>
+        <img src="/chat.png" alt="chat" />
+      </div>
+    </>
+  )
+
+}
+
+
+
+async function handleLogout() {
   // remove user from available chat participants
   if (chatFeed) {
     chatFeed.unsubscribe();
   }
 
-  API.graphql(graphqlOperation(updateUser, { input: {id: theUser, isOnline: false}}));
+  await API.graphql(graphqlOperation(updateUser, { input: {id: theUser, isOnline: false}}));
 
   Auth.signOut();
   window.location.reload();
@@ -139,9 +166,9 @@ function ChatRoom(props) {
   const [messages, setMessages] = useState([]);
   const [formValue, setFormValue] = useState('');
 
-  if (!chatFeed) {
+  React.useEffect(() => {
     setupChatFeed(setMessages, props.chattingWith);
-  }
+  }, [props.chattingWith]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
