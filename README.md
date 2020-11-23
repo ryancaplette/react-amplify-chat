@@ -4,6 +4,6 @@
 
 ## Description 
 
-I Built this app to experiment with Cognito, GraphQL, and DynamoDB.
+I Built this app to experiment with the backend infrastructure of Amplify, Cognito, AppSync/GraphQL, and DynamoDB.
 
 ![Chat Demo](assets/chat.gif)
