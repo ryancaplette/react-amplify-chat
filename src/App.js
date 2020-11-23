@@ -205,7 +205,7 @@ function ChatRoom(props) {
 
 function ChatMessage(props) {
   const { from, message } = props.message
-  
+
   const messageClass = theUser === from ? 'sent' : 'received'
   return (<>
     <div className={`message ${messageClass}`}>
